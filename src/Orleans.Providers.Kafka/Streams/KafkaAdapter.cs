@@ -10,9 +10,9 @@ namespace Orleans.Providers.Kafka.Streams
 {
     public class KafkaAdapter: IQueueAdapter
     {
-        private readonly HashRingBasedStreamQueueMapper _streamQueueMapper;
+        private readonly IStreamQueueMapper _streamQueueMapper;
         // private readonly ProtocolGateway _gateway;
-        // private readonly IKafkaBatchFactory _batchFactory;
+        private readonly IKafkaMapper _mapper;
         private readonly ILogger _logger;
         private readonly KafkaStreamProviderConfig _config;
         private readonly Producer _producer;
@@ -22,20 +22,16 @@ namespace Orleans.Providers.Kafka.Streams
         public StreamProviderDirection Direction => StreamProviderDirection.ReadWrite;
 
 
-        public KafkaAdapter(HashRingBasedStreamQueueMapper queueMapper, KafkaStreamProviderConfig config,
-            string providerName, ILogger logger)
+        public KafkaAdapter( KafkaStreamProviderConfig config,
+            string providerName, ILogger logger, IStreamQueueMapper streamQueueMapper, IKafkaMapper mapper)
         {
-            if (config == null) throw new ArgumentNullException(nameof(config));
-            //if (batchFactory == null) throw new ArgumentNullException(nameof(batchFactory));
-            if (queueMapper == null) throw new ArgumentNullException(nameof(queueMapper));
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
             if (string.IsNullOrEmpty(providerName)) throw new ArgumentNullException(nameof(providerName));
 
-            _config = config;
-            _streamQueueMapper = queueMapper;
             Name = providerName;
-            //_batchFactory = batchFactory;
-            _logger = logger;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _streamQueueMapper = streamQueueMapper ?? throw new ArgumentNullException(nameof(streamQueueMapper));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _producer = new Producer(config.KafkaConfig);
 
@@ -46,7 +42,7 @@ namespace Orleans.Providers.Kafka.Streams
 
         public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
         {
-            throw new NotImplementedException();
+            return KafkaAdapterReceiver.Create(_config, _logger, queueId, Name, _mapper);
         }
 
         public Task QueueMessageBatchAsync<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)
