@@ -1,0 +1,6 @@
+<Project>
+  <Import Project="dependencies.props" />
+  <PropertyGroup>
+    <LangVersion>7.1</LangVersion>
+  </PropertyGroup>
+</Project>

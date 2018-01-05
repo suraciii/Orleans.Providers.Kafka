@@ -3,7 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Providers.Kafka", "Orleans.Providers.Kafka\Orleans.Providers.Kafka.csproj", "{77051C28-7D0E-40CB-BF51-10475DD9068C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{F637A060-E63E-4E7E-9340-8DEBF718A186}"
+	ProjectSection(SolutionItems) = preProject
+		tools\common.props = tools\common.props
+		tools\dependencies.props = tools\dependencies.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9E865B2E-18C8-4FFE-BD83-A95860293F47}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{707B9907-7A5E-4D6E-834A-3557170EB906}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Providers.Kafka", "src\Orleans.Providers.Kafka\Orleans.Providers.Kafka.csproj", "{557B582F-0BB0-4108-B034-030E6EA5EED6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{999B11BF-A69A-4C66-88DB-FD5C3B8F377C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,13 +23,17 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{77051C28-7D0E-40CB-BF51-10475DD9068C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{77051C28-7D0E-40CB-BF51-10475DD9068C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{77051C28-7D0E-40CB-BF51-10475DD9068C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77051C28-7D0E-40CB-BF51-10475DD9068C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{557B582F-0BB0-4108-B034-030E6EA5EED6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{557B582F-0BB0-4108-B034-030E6EA5EED6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{557B582F-0BB0-4108-B034-030E6EA5EED6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{557B582F-0BB0-4108-B034-030E6EA5EED6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F637A060-E63E-4E7E-9340-8DEBF718A186} = {9E865B2E-18C8-4FFE-BD83-A95860293F47}
+		{557B582F-0BB0-4108-B034-030E6EA5EED6} = {707B9907-7A5E-4D6E-834A-3557170EB906}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CDA7E57B-7B37-4B9C-A246-5254D1F402A3}
