@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Orleans.Serialization;
 using Orleans.Streams;
 
 namespace Orleans.Providers.Kafka.Streams
@@ -8,13 +9,14 @@ namespace Orleans.Providers.Kafka.Streams
     public class KafkaAdapterFactory : IQueueAdapterFactory
     {
 
-        private KafkaStreamProviderOptions _options;
+        private KafkaStreamProviderConfig _config;
         private HashRingBasedStreamQueueMapper _streamQueueMapper;
         private IQueueAdapterCache _adapterCache;
         private string _providerName;
-        private Logger _logger;
-        private KafkaQueueAdapter _adapter;
+        private ILogger _logger;
+        private KafkaAdapter _adapter;
         private SerializationManager _serializationManager;
+
 
         public void Init(IProviderConfiguration config, string providerName, IServiceProvider serviceProvider)
         {
