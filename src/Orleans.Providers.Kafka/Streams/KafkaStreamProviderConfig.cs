@@ -11,9 +11,11 @@ namespace Orleans.Providers.Kafka.Streams
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
 
-            KafkaConfig = config.Properties.Select(kvp=>new KeyValuePair<string, object>(kvp.Key,kvp.Value));
+            KafkaConfig = config.Properties.Select(kvp=>new KeyValuePair<string, object>(kvp.Key, kvp.Value));
         }
 
         public IEnumerable<KeyValuePair<string, object>> KafkaConfig { get; private set; }
+        public string TopicName { get; private set; }
+
     }
 }

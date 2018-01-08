@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using Orleans.Serialization;
 using Orleans.Streams;
 
 namespace Orleans.Providers.Kafka.Streams
 {
-    public class KafkaAdapterFactory : IQueueAdapterFactory
+    public class KafkaAdapterFactory : IQueueAdapterFactory, IQueueAdapter
     {
 
         private KafkaStreamProviderConfig _config;
@@ -15,8 +17,18 @@ namespace Orleans.Providers.Kafka.Streams
         private string _providerName;
         private ILogger _logger;
         private KafkaAdapter _adapter;
-        private SerializationManager _serializationManager;
+        //private SerializationManager _serializationManager;
+        private readonly Producer _producer;
 
+        public SerializationManager SerializationManager { get; private set; }
+
+        public KafkaAdapterFactory()
+        {
+
+        }
+
+
+        #region Factory
 
         public void Init(IProviderConfiguration config, string providerName, IServiceProvider serviceProvider)
         {
@@ -42,5 +54,37 @@ namespace Orleans.Providers.Kafka.Streams
         {
             throw new NotImplementedException();
         }
+
+        #endregion
+
+        #region Adapter
+
+        public string Name { get; }
+        public bool IsRewindable => true;
+        public StreamProviderDirection Direction => StreamProviderDirection.ReadWrite;
+
+        public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task QueueMessageBatchAsync<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)
+        {
+            await Task.Run(() => QueueMessageBatchExternal<T>(streamGuid, streamNamespace, events, token, requestContext));
+        }
+
+        private void QueueMessageBatchExternal<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)
+        {
+            var queueId = _streamQueueMapper.GetQueueForStream(streamGuid, streamNamespace);
+            var partitionId = (int)queueId.GetNumericId();
+            _logger.LogDebug("KafkaAdapter - For StreamId: {0}, StreamNamespace:{1} using partition {2}", streamGuid, streamNamespace, partitionId);
+
+            var payload = KafkaBatchContainer.ToKafkaData(this.SerializationManager, streamGuid, streamNamespace, events, requestContext);
+
+            _producer.ProduceAsync(_config.TopicName)
+
+        }
+        #endregion
+
     }
 }
