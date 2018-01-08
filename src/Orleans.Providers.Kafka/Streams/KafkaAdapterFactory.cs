@@ -65,7 +65,7 @@ namespace Orleans.Providers.Kafka.Streams
 
         public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
         {
-            throw new NotImplementedException();
+            return KafkaAdapterReceiver.Create(_config, _logger, queueId, Name);
         }
 
         public async Task QueueMessageBatchAsync<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)
