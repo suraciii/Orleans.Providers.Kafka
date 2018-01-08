@@ -70,7 +70,7 @@ namespace Orleans.Providers.Kafka.Streams
 
         public Task<IStreamFailureHandler> GetDeliveryFailureHandler(QueueId queueId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<IStreamFailureHandler>(new NoOpStreamDeliveryFailureHandler(false));
         }
 
         #endregion
