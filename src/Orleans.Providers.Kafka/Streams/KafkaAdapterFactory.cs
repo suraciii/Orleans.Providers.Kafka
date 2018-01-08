@@ -70,20 +70,21 @@ namespace Orleans.Providers.Kafka.Streams
 
         public async Task QueueMessageBatchAsync<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)
         {
-            await Task.Run(() => QueueMessageBatchExternal<T>(streamGuid, streamNamespace, events, token, requestContext));
-        }
-
-        private void QueueMessageBatchExternal<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)
-        {
             var queueId = _streamQueueMapper.GetQueueForStream(streamGuid, streamNamespace);
             var partitionId = (int)queueId.GetNumericId();
             _logger.LogDebug("KafkaAdapter - For StreamId: {0}, StreamNamespace:{1} using partition {2}", streamGuid, streamNamespace, partitionId);
 
             var payload = KafkaBatchContainer.ToKafkaData(this.SerializationManager, streamGuid, streamNamespace, events, requestContext);
 
-            _producer.ProduceAsync(_config.TopicName)
+            var msg = await _producer.ProduceAsync(_config.TopicName, streamGuid.ToByteArray(), payload);
 
+            if(msg.Error.HasError)
+            {
+                _logger.LogWarning("KafkaQueueAdapter - Error sending message through kafka client, the error code is {0}, message offset is {1}, reason: {2}", msg.Error.Code, msg.Offset, msg.Error.Reason);
+                throw new StreamEventDeliveryFailureException("Producing message failed.");
+            }
         }
+
         #endregion
 
     }
