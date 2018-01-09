@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
+using Orleans.Providers.Streams.Common;
 using Orleans.Serialization;
 using Orleans.Streams;
 using System;
@@ -99,9 +100,30 @@ namespace Orleans.Providers.Kafka.Streams
             return batches;
         }
 
-        public Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
+        public async Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
         {
-            throw new NotImplementedException();
+            if (messages.Any())
+            {
+                await CommitOffset();
+            }
+        }
+
+        private async Task CommitOffset()
+        {
+            var commitTask = _consumer.CommitAsync();
+            await Task.WhenAny(commitTask, Task.Delay(_config.Timeout));
+
+            if (!commitTask.IsCompleted || commitTask.Result.Error.HasError)
+            {
+                var newException = new KafkaStreamProviderException("Commit offset operation has failed");
+
+                _logger.LogError(newException,
+                    "KafkaQueueAdapterReceiver - Commit offset operation has failed.");
+                throw new KafkaStreamProviderException();
+            }
+            var offset = commitTask.Result.Offsets.Max(t=>t.Offset.Value);
+            _logger.LogTrace(
+                "KafkaQueueAdapterReceiver - Commited an offset {0} to the ConsumerGroup", offset);
         }
 
         public Task Shutdown(TimeSpan timeout)
