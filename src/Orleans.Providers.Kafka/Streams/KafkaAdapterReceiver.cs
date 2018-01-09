@@ -128,7 +128,8 @@ namespace Orleans.Providers.Kafka.Streams
 
         public Task Shutdown(TimeSpan timeout)
         {
-            throw new NotImplementedException();
+            _consumer.Unassign();
+            return Task.CompletedTask;
         }
     }
 }
