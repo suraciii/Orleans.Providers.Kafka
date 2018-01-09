@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
+using Orleans.Serialization;
 using Orleans.Streams;
 using System;
 using System.Collections.Generic;
@@ -17,19 +18,21 @@ namespace Orleans.Providers.Kafka.Streams
         private long currentOffset;
         private Confluent.Kafka.Metadata metadata;
         private TopicPartitionOffset position;
+        private readonly SerializationManager _serializationManager;
 
         public QueueId Id { get; }
 
-        public static IQueueAdapterReceiver Create(KafkaStreamProviderConfig config, ILogger logger, QueueId queueId, string providerName)
+        public static IQueueAdapterReceiver Create(KafkaStreamProviderConfig config, ILogger logger, QueueId queueId, string providerName, SerializationManager serializationManager)
         {
-            return new KafkaAdapterReceiver(config, logger, queueId, providerName);
+            return new KafkaAdapterReceiver(config, logger, queueId, providerName, serializationManager);
         }
 
-        public KafkaAdapterReceiver(KafkaStreamProviderConfig config, ILogger logger, QueueId queueId, string providerName)
+        public KafkaAdapterReceiver(KafkaStreamProviderConfig config, ILogger logger, QueueId queueId, string providerName, SerializationManager serializationManager)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             Id = queueId ?? throw new ArgumentNullException(nameof(queueId));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _serializationManager = serializationManager ?? throw new ArgumentNullException(nameof(_serializationManager));
 
             _consumer = new Consumer(config.KafkaConfig);
         }
@@ -40,7 +43,7 @@ namespace Orleans.Providers.Kafka.Streams
             var tp = new TopicPartition(_config.TopicName, partitionId);
             _consumer.Assign(new List<TopicPartition> { tp });
             var po = _consumer.Position(_consumer.Assignment).First();
-            if(po.Error.HasError)
+            if (po.Error.HasError)
             {
                 _logger.LogWarning("KafkaAdapterReceiver - fetch position failed, the error code is {0}, reason: {1}", po.Error.Code, po.Error.Reason);
                 throw new KafkaStreamProviderException("Fetch position failed.");
@@ -49,9 +52,51 @@ namespace Orleans.Providers.Kafka.Streams
             return Task.CompletedTask;
         }
 
-        public Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)
+        public async Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)
         {
-            throw new NotImplementedException();
+            Task<List<Message>> fetchingTask = Task.Run(() =>
+            {
+                List<Message> messages = new List<Message>();
+                for (int i = 0; i < maxCount; ++i)
+                {
+                    if (_consumer.Consume(out var msg, _config.Timeout))
+                    {
+                        messages.Add(msg);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                return messages;
+            });
+            await Task.WhenAny(fetchingTask, Task.Delay(_config.Timeout));
+            if (!fetchingTask.IsCompleted)
+            {
+                if (fetchingTask.IsFaulted && fetchingTask.Exception != null)
+                {
+                    _logger.LogWarning("KafkaQueueAdapterReceiver - Fetching messages from kafka failed, tried to fetch {0} messages ",
+                        maxCount);
+                    throw fetchingTask.Exception;
+                }
+                _logger.LogWarning("KafkaQueueAdapterReceiver - Fetching messages from kafka timeout, tried to fetch {0} messages ",
+                    maxCount);
+                throw new KafkaStreamProviderException("Fetching messages from kafka timeout");
+            }
+
+            IList<IBatchContainer> batches = new List<IBatchContainer>();
+            if (fetchingTask.Result == null)
+            {
+                return batches;
+            }
+
+            var messages = fetchingTask.Result;
+            batches = messages.Select(m => KafkaBatchContainer.FromKafkaMessage(_serializationManager, m, m.Offset.Value)).ToList();
+            if (batches.Count <= 0) return batches;
+
+            _logger.LogDebug("KafkaQueueAdapterReceiver - Pulled {0} messages for queue number {1}", batches.Count, Id.GetNumericId());
+
+            return batches;
         }
 
         public Task MessagesDeliveredAsync(IList<IBatchContainer> messages)

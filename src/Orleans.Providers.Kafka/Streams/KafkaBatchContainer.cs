@@ -38,7 +38,7 @@ namespace Orleans.Providers.Kafka.Streams
             return bytes;
         }
 
-        internal static KafkaBatchContainer FromKafkaMessage(SerializationManager serializationManager, Message msg, long sequenceId)
+        internal static IBatchContainer FromKafkaMessage(SerializationManager serializationManager, Message msg, long sequenceId)
         {
             
             var kafkaBatch = serializationManager.DeserializeFromByteArray<KafkaBatchContainer>(msg.Value);
