@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Orleans.Streams;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +15,8 @@ namespace Orleans.Providers.Kafka.Streams
         private readonly KafkaStreamProviderConfig _config;
         private readonly ILogger _logger;
         private long currentOffset;
+        private Confluent.Kafka.Metadata metadata;
+        private TopicPartitionOffset position;
 
         public QueueId Id { get; }
 
@@ -33,7 +36,17 @@ namespace Orleans.Providers.Kafka.Streams
 
         public Task Initialize(TimeSpan timeout)
         {
-            var x = _consumer.Position(_consumer.Assignment);
+            var partitionId = (int)Id.GetNumericId();
+            var tp = new TopicPartition(_config.TopicName, partitionId);
+            _consumer.Assign(new List<TopicPartition> { tp });
+            var po = _consumer.Position(_consumer.Assignment).First();
+            if(po.Error.HasError)
+            {
+                _logger.LogWarning("KafkaAdapterReceiver - fetch position failed, the error code is {0}, reason: {1}", po.Error.Code, po.Error.Reason);
+                throw new KafkaStreamProviderException("Fetch position failed.");
+            }
+            position = po.TopicPartitionOffset;
+            return Task.CompletedTask;
         }
 
         public Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)

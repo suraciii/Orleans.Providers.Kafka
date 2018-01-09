@@ -95,7 +95,7 @@ namespace Orleans.Providers.Kafka.Streams
             if(msg.Error.HasError)
             {
                 logger.LogWarning("KafkaQueueAdapter - Error sending message through kafka client, the error code is {0}, message offset is {1}, reason: {2}", msg.Error.Code, msg.Offset, msg.Error.Reason);
-                throw new StreamEventDeliveryFailureException("Producing message failed.");
+                throw new KafkaStreamProviderException("Producing message failed.");
             }
         }
 
