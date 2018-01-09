@@ -13,6 +13,7 @@ namespace Orleans.Providers.Kafka.Streams
         private readonly Consumer _consumer;
         private readonly KafkaStreamProviderConfig _config;
         private readonly ILogger _logger;
+        private long currentOffset;
 
         public QueueId Id { get; }
 
@@ -32,7 +33,7 @@ namespace Orleans.Providers.Kafka.Streams
 
         public Task Initialize(TimeSpan timeout)
         {
-            throw new NotImplementedException();
+            var x = _consumer.Position(_consumer.Assignment);
         }
 
         public Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)

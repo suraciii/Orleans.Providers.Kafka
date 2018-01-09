@@ -14,18 +14,13 @@ namespace Orleans.Providers.Kafka.Streams
         private IServiceProvider serviceProvider;
         private KafkaStreamProviderConfig config;
         private IStreamQueueMapper streamQueueMapper;
-        private IQueueAdapterCache _adapterCache;
+        private IQueueAdapterCache adapterCache;
         private string providerName;
         private ILogger logger;
         private ILoggerFactory loggerFactory;
         private SerializationManager serializationManager;
         private Producer producer;
-
-        public KafkaAdapterFactory()
-        {
-
-        }
-
+        private Confluent.Kafka.Metadata metadata;
 
         #region Factory
 
@@ -46,6 +41,7 @@ namespace Orleans.Providers.Kafka.Streams
         private void InitProducer()
         {
             producer = new Producer(config.KafkaConfig);
+            metadata = producer.GetMetadata(false, config.TopicName, config.Timeout);
         } 
 
         public Task<IQueueAdapter> CreateAdapter()
@@ -94,7 +90,7 @@ namespace Orleans.Providers.Kafka.Streams
 
             var payload = KafkaBatchContainer.ToKafkaData(this.serializationManager, streamGuid, streamNamespace, events, requestContext);
 
-            var msg = await producer.ProduceAsync(config.TopicName, streamGuid.ToByteArray(), payload);
+            var msg = await producer.ProduceAsync(config.TopicName, null, 0, 0, payload, 0, payload.Length, partitionId);
 
             if(msg.Error.HasError)
             {
