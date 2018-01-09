@@ -8,7 +8,7 @@ namespace Orleans.Providers.Kafka.Streams
 {
     public class KafkaStreamProviderConfig
     {
-
+        public const int CacheSizeDefaultValue = 2048;
         public KafkaStreamProviderConfig(IProviderConfiguration config)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));

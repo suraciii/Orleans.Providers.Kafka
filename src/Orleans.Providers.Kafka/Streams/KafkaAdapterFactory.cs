@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Orleans.Providers.Streams.Common;
 using Orleans.Serialization;
 using Orleans.Streams;
 
@@ -11,6 +13,7 @@ namespace Orleans.Providers.Kafka.Streams
 {
     public class KafkaAdapterFactory : IQueueAdapterFactory, IQueueAdapter
     {
+
         private IServiceProvider serviceProvider;
         private KafkaStreamProviderConfig config;
         private IStreamQueueMapper streamQueueMapper;
@@ -36,6 +39,11 @@ namespace Orleans.Providers.Kafka.Streams
             this.serializationManager = this.serviceProvider.GetRequiredService<SerializationManager>();
 
             logger = this.loggerFactory.CreateLogger<KafkaAdapterFactory>();
+
+            var cacheSize = SimpleQueueAdapterCache.ParseSize(providerCfg, KafkaStreamProviderConfig.CacheSizeDefaultValue);
+            adapterCache = new SimpleQueueAdapterCache(cacheSize, providerName, loggerFactory);
+
+            streamQueueMapper = new HashRingBasedStreamQueueMapper(config.NumOfQueues, providerName);
         }
 
         private void InitProducer()
@@ -46,17 +54,13 @@ namespace Orleans.Providers.Kafka.Streams
 
         public Task<IQueueAdapter> CreateAdapter()
         {
-            if (streamQueueMapper == null)
-            {
-                streamQueueMapper = new HashRingBasedStreamQueueMapper(config.NumOfQueues, providerName);
-            }
             InitProducer();
             return Task.FromResult<IQueueAdapter>(this);
         }
 
         public IQueueAdapterCache GetQueueAdapterCache()
         {
-            throw new NotImplementedException();
+            return adapterCache;
         }
 
         public IStreamQueueMapper GetStreamQueueMapper()
@@ -79,7 +83,7 @@ namespace Orleans.Providers.Kafka.Streams
 
         public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
         {
-            return KafkaAdapterReceiver.Create(config, logger, queueId, Name);
+            return KafkaAdapterReceiver.Create(config, logger, queueId, Name, serializationManager);
         }
 
         public async Task QueueMessageBatchAsync<T>(Guid streamGuid, string streamNamespace, IEnumerable<T> events, StreamSequenceToken token, Dictionary<string, object> requestContext)

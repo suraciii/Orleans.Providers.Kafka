@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Orleans.Providers.Kafka.Streams
 {
-    public class KafkaAdapterReceiver : IQueueAdapterReceiver
+    public class KafkaAdapterReceiver : IQueueAdapterReceiver, IQueueCache
     {
         private readonly Consumer _consumer;
         private readonly KafkaStreamProviderConfig _config;
@@ -23,7 +23,7 @@ namespace Orleans.Providers.Kafka.Streams
 
         public QueueId Id { get; }
 
-        public static IQueueAdapterReceiver Create(KafkaStreamProviderConfig config, ILogger logger, QueueId queueId, string providerName, SerializationManager serializationManager)
+        public static KafkaAdapterReceiver Create(KafkaStreamProviderConfig config, ILogger logger, QueueId queueId, string providerName, SerializationManager serializationManager)
         {
             return new KafkaAdapterReceiver(config, logger, queueId, providerName, serializationManager);
         }
@@ -37,6 +37,8 @@ namespace Orleans.Providers.Kafka.Streams
 
             _consumer = new Consumer(config.KafkaConfig);
         }
+
+        #region AdapterReceiver
 
         public Task Initialize(TimeSpan timeout)
         {
@@ -121,7 +123,7 @@ namespace Orleans.Providers.Kafka.Streams
                     "KafkaQueueAdapterReceiver - Commit offset operation has failed.");
                 throw new KafkaStreamProviderException();
             }
-            var offset = commitTask.Result.Offsets.Max(t=>t.Offset.Value);
+            var offset = commitTask.Result.Offsets.Max(t => t.Offset.Value);
             _logger.LogTrace(
                 "KafkaQueueAdapterReceiver - Commited an offset {0} to the ConsumerGroup", offset);
         }
@@ -131,5 +133,37 @@ namespace Orleans.Providers.Kafka.Streams
             _consumer.Unassign();
             return Task.CompletedTask;
         }
+
+        #endregion
+
+        #region QueueCache
+
+        public void AddToCache(IList<IBatchContainer> messages)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryPurgeFromCache(out IList<IBatchContainer> purgedItems)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IQueueCacheCursor GetCacheCursor(IStreamIdentity streamIdentity, StreamSequenceToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsUnderPressure()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetMaxAddCount()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
     }
 }
