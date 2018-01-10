@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Orleans.Providers.Kafka.Streams
 {
-    public class KafkaAdapterReceiver : IQueueAdapterReceiver, IQueueCache
+    public class KafkaAdapterReceiver : IQueueAdapterReceiver
     {
         private readonly Consumer _consumer;
         private readonly KafkaStreamProviderConfig _config;
@@ -59,19 +59,19 @@ namespace Orleans.Providers.Kafka.Streams
         {
             Task<List<Message>> fetchingTask = Task.Run(() =>
             {
-                List<Message> messages = new List<Message>();
+                List<Message> msgs = new List<Message>();
                 for (int i = 0; i < maxCount; ++i)
                 {
                     if (_consumer.Consume(out var msg, _config.Timeout))
                     {
-                        messages.Add(msg);
+                        msgs.Add(msg);
                     }
                     else
                     {
                         break;
                     }
                 }
-                return messages;
+                return msgs;
             });
             await Task.WhenAny(fetchingTask, Task.Delay(_config.Timeout));
             if (!fetchingTask.IsCompleted)
@@ -132,35 +132,6 @@ namespace Orleans.Providers.Kafka.Streams
         {
             _consumer.Unassign();
             return Task.CompletedTask;
-        }
-
-        #endregion
-
-        #region QueueCache
-
-        public void AddToCache(IList<IBatchContainer> messages)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool TryPurgeFromCache(out IList<IBatchContainer> purgedItems)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IQueueCacheCursor GetCacheCursor(IStreamIdentity streamIdentity, StreamSequenceToken token)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool IsUnderPressure()
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetMaxAddCount()
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
