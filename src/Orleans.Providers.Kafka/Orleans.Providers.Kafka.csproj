@@ -1,6 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\tools\common.props" />
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
@@ -8,6 +6,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Orleans.Core" Version="$(OrleansVersion)" />
     <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="$(OrleansVersion)" />
+    <PackageReference Include="Microsoft.Orleans.Serialization.Bond" Version="$(OrleansVersion)" />
     <PackageReference Include="Confluent.Kafka" Version="0.11.3" />
   </ItemGroup>
 

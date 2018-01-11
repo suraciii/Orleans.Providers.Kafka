@@ -13,13 +13,17 @@ namespace Orleans.Providers.Kafka.Streams
     [Serializable]
     public class KafkaBatchContainer : IBatchContainer
     {
+        
         private EventSequenceToken sequenceToken;
+
         private readonly List<object> events;
+        
         private readonly Dictionary<string, object> requestContext;
 
         public StreamSequenceToken SequenceToken => sequenceToken;
-        public Guid StreamGuid { get; }
-        public string StreamNamespace { get; }
+        
+        public Guid StreamGuid { get; private set; }
+        public string StreamNamespace { get; private set; }
         public string Timestamp { get; private set; }
 
         public KafkaBatchContainer(Guid streamGuid, String streamNamespace, List<object> events, Dictionary<string, object> requestContext)
