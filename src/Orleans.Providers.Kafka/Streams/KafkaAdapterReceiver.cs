@@ -45,6 +45,11 @@ namespace Orleans.Providers.Kafka.Streams
 
         public Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)
         {
+            if(consumer == null)
+            {
+                IList<IBatchContainer> empty = new List<KafkaBatchContainer>().Cast<IBatchContainer>().ToList();
+                return Task.FromResult(empty);
+            }
             List<Message> msgs = new List<Message>();
             while(true)
             {

@@ -77,13 +77,14 @@ namespace Orleans.Providers.Kafka.Streams
         public Event Event { get; set; }
     }
 
+    [Serializable]
     [Bond.Schema]
     public class Event
     {
         [Bond.Id(0)]
         public string EventType { get; set; }
         [Bond.Id(1)]
-        public byte[] Payload { get; }
+        public byte[] Payload { get; set; }
     }
 
 }

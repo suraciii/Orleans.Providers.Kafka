@@ -25,7 +25,6 @@ namespace Orleans.Providers.Kafka.Streams
         private KafkaStreamCachePressureOptions cacheOptions;
         private KafkaReceiverOptions receiverOptions;
         private StreamStatisticOptions statisticOptions;
-        private StreamCacheEvictionOptions cacheEvictionOptions;
         private SimpleQueueAdapterCache _adapterCache;
         private IStreamQueueMapper streamQueueMapper;
         private ConcurrentDictionary<QueueId, KafkaAdapterReceiver> receivers;
@@ -190,7 +189,7 @@ namespace Orleans.Providers.Kafka.Streams
         public static KafkaAdapterFactory Create(IServiceProvider services, string name)
         {
             var kafkaOptions = services.GetOptionsByName<KafkaOptions>(name);
-            var receiverOptions = services.GetOptionsByName<KafkaReceiverMonitorDimensions>(name);
+            var receiverOptions = services.GetOptionsByName<KafkaReceiverOptions>(name);
             var cacheOptions = services.GetOptionsByName<KafkaStreamCachePressureOptions>(name);
             var statisticOptions = services.GetOptionsByName<StreamStatisticOptions>(name);
             var factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(services, name, kafkaOptions, receiverOptions, cacheOptions, statisticOptions);
