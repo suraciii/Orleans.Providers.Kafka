@@ -10,67 +10,80 @@ using System.Text;
 
 namespace Orleans.Providers.Kafka.Streams
 {
-    [Serializable]
     public class KafkaBatchContainer : IBatchContainer
     {
-        
-        private EventSequenceToken sequenceToken;
+        private static readonly byte[] zero8 = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 
-        private readonly List<object> events;
-        
-        private readonly Dictionary<string, object> requestContext;
+        public Guid StreamGuid { get; set; }
 
-        public StreamSequenceToken SequenceToken => sequenceToken;
-        
-        public Guid StreamGuid { get; private set; }
-        public string StreamNamespace { get; private set; }
-        public string Timestamp { get; private set; }
+        public string StreamNamespace { get; set; }
 
-        public KafkaBatchContainer(Guid streamGuid, String streamNamespace, List<object> events, Dictionary<string, object> requestContext)
-        {
-            StreamGuid = streamGuid;
-            StreamNamespace = streamNamespace;
-            this.events = events ?? throw new ArgumentNullException(nameof(events), "Message contains no events");
-            this.requestContext = requestContext;
-            Timestamp = DateTime.UtcNow.ToString("O");
-        }
+        public StreamSequenceToken SequenceToken => EventSequenceToken;
 
-        internal static byte[] ToKafkaData<T>(SerializationManager serializationManager, Guid streamId, string streamNamespace, IEnumerable<T> events, Dictionary<string, object> requestContext)
-        {
-            var container = new KafkaBatchContainer(streamId, streamNamespace, events.Cast<object>().ToList(), requestContext);
-            var bytes = serializationManager.SerializeToByteArray(container);
-            return bytes;
-        }
+        public EventSequenceToken EventSequenceToken { get; set; }
 
-        internal static IBatchContainer FromKafkaMessage(SerializationManager serializationManager, Message msg, long sequenceId)
-        {
-            
-            var kafkaBatch = serializationManager.DeserializeFromByteArray<KafkaBatchContainer>(msg.Value);
-            kafkaBatch.sequenceToken = new EventSequenceToken(sequenceId);
-
-            return kafkaBatch;
-        }
+        public TopicPartitionOffset TopicPartitionOffset { get; set; }
 
         public IEnumerable<Tuple<T, StreamSequenceToken>> GetEvents<T>()
         {
-            return events.OfType<T>().Select((e, i) => Tuple.Create<T, StreamSequenceToken>(e, sequenceToken.CreateSequenceTokenForEvent(i)));
+            return Events.OfType<T>().Select((e, i) => Tuple.Create<T, StreamSequenceToken>(e, EventSequenceToken.CreateSequenceTokenForEvent(i)));
         }
+
+        public List<Event> Events { get; set; }
 
         public bool ImportRequestContext()
         {
-            if (requestContext != null)
-            {
-                RequestContextExtensions.Import(requestContext);
-                return true;
-            }
             return false;
         }
 
         public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)
         {
-            return events.Any(item => shouldReceiveFunc(stream, filterData, item));
+            return true;
         }
 
+        public static KafkaBatchContainer FromKafkaMessage(Message msg, SerializationManager serializationManager, long seqNumber)
+        {
+            var container = new KafkaBatchContainer();
+            var events = serializationManager.DeserializeFromByteArray<List<Event>>(msg.Value);
+            var aggIdString = msg.Key == null ? null : Encoding.UTF8.GetString(msg.Key);
+            if(string.IsNullOrEmpty(aggIdString) && Guid.TryParse(aggIdString, out var guid))
+            {
+                container.StreamGuid = guid;
+            }
+            else
+            {
+                container.StreamGuid = new Guid(msg.Partition, 0, 0, zero8);
+            }
+
+            container.StreamNamespace = msg.Topic;
+            container.EventSequenceToken = new EventSequenceToken(seqNumber);
+            container.Events = events;
+
+            container.TopicPartitionOffset = msg.TopicPartitionOffset;
+
+            return container;
+        }
 
     }
+
+    public class DomainEvent
+    {
+        public string AggregateId { get; set; }
+        public Event Event { get; set; }
+    }
+
+    public class IntegrationEvent
+    {
+        public Event Event { get; set; }
+    }
+
+    [Bond.Schema]
+    public class Event
+    {
+        [Bond.Id(0)]
+        public string EventType { get; set; }
+        [Bond.Id(1)]
+        public byte[] Payload { get; }
+    }
+
 }

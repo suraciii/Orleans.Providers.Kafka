@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Orleans.TestHost\src\Orleans.TestHost\Orleans.TestHost.csproj" />
     <ProjectReference Include="..\..\src\Orleans.Providers.Kafka\Orleans.Providers.Kafka.csproj" />
   </ItemGroup>
 
