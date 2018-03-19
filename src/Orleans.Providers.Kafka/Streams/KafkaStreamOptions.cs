@@ -1,4 +1,6 @@
-﻿using Orleans.Streams;
+﻿using Orleans;
+using Orleans.Runtime;
+using Orleans.Streams;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -50,25 +52,45 @@ namespace Orleans.Providers.Kafka.Streams
 
     public class KafkaStreamCachePressureOptions
     {
-
-        public int CacheSize { get; set; }
-
-        /// <summary>
-        /// SlowConsumingPressureMonitorConfig
-        /// </summary>
-        public double? SlowConsumingMonitorFlowControlThreshold { get; set; }
-
-        /// <summary>
-        /// SlowConsumingMonitorPressureWindowSize
-        /// </summary>
-        public TimeSpan? SlowConsumingMonitorPressureWindowSize { get; set; }
-
-        /// <summary>
-        /// AveragingCachePressureMonitorFlowControlThreshold, AveragingCachePressureMonitor is turn on by default. 
-        /// User can turn it off by setting this value to null
-        /// </summary>
-        public double? AveragingCachePressureMonitorFlowControlThreshold { get; set; } = DEFAULT_AVERAGING_CACHE_PRESSURE_MONITORING_THRESHOLD;
-        public const double AVERAGING_CACHE_PRESSURE_MONITORING_OFF = 1.0;
-        public const double DEFAULT_AVERAGING_CACHE_PRESSURE_MONITORING_THRESHOLD = 1.0 / 3.0;
+        public int CacheSize { get; set; } = 20;
     }
+
+    public class KafkaOptionsValidator : IConfigurationValidator
+    {
+        private readonly KafkaOptions options;
+        private readonly string name;
+        public KafkaOptionsValidator(KafkaOptions options, string name)
+        {
+            this.options = options;
+            this.name = name;
+        }
+        public void ValidateConfiguration()
+        {
+            if (String.IsNullOrEmpty(options.BrokerList))
+                throw new OrleansConfigurationException($"{nameof(KafkaOptions)} on stream provider {this.name} is invalid. {nameof(KafkaOptions.BrokerList)} is invalid");
+        }
+    }
+
+    public class KafkaRecieverOptionsValidator : IConfigurationValidator
+    {
+        private readonly KafkaReceiverOptions options;
+        private readonly string name;
+        public KafkaRecieverOptionsValidator(KafkaReceiverOptions options, string name)
+        {
+            this.options = options;
+            this.name = name;
+        }
+        public void ValidateConfiguration()
+        {
+            if (options.TopicList == null || options.TopicList.Count == 0)
+                throw new OrleansConfigurationException($"{nameof(KafkaReceiverOptions)} on stream provider {this.name} is invalid. {nameof(KafkaReceiverOptions.TopicList)} is invalid");
+            if (string.IsNullOrEmpty(options.ConsumerGroup))
+                throw new OrleansConfigurationException($"{nameof(KafkaReceiverOptions)} on stream provider {this.name} is invalid. {nameof(KafkaReceiverOptions.ConsumerGroup)} is invalid");
+            if (options.TotalQueueCount <= 0)
+                throw new OrleansConfigurationException($"{nameof(KafkaReceiverOptions)} on stream provider {this.name} is invalid. {nameof(KafkaReceiverOptions.TotalQueueCount)} is invalid");
+        }
+    }
+
 }
+
+

@@ -52,12 +52,10 @@ namespace Orleans.Providers.Kafka.Streams
 
 
 
-        public KafkaAdapterFactory(string name, KafkaOptions kafkaOptions, KafkaReceiverOptions receiverOptions, KafkaStreamCachePressureOptions cacheOptions,
-            StreamCacheEvictionOptions cacheEvictionOptions, StreamStatisticOptions statisticOptions,
+        public KafkaAdapterFactory(string name, KafkaOptions kafkaOptions, KafkaReceiverOptions receiverOptions, KafkaStreamCachePressureOptions cacheOptions, StreamStatisticOptions statisticOptions,
             IServiceProvider serviceProvider, SerializationManager serializationManager, ITelemetryProducer telemetryProducer, ILoggerFactory loggerFactory)
         {
             this.Name = name;
-            this.cacheEvictionOptions = cacheEvictionOptions ?? throw new ArgumentNullException(nameof(cacheEvictionOptions));
             this.statisticOptions = statisticOptions ?? throw new ArgumentNullException(nameof(statisticOptions));
             this.kafkaOptions = kafkaOptions ?? throw new ArgumentNullException(nameof(kafkaOptions));
             this.cacheOptions = cacheOptions ?? throw new ArgumentNullException(nameof(cacheOptions));
@@ -189,6 +187,16 @@ namespace Orleans.Providers.Kafka.Streams
             return new KafkaAdapterReceiver(kafkaOptions, receiverOptions, SerializationManager);
         }
 
-
+        public static KafkaAdapterFactory Create(IServiceProvider services, string name)
+        {
+            var kafkaOptions = services.GetOptionsByName<KafkaOptions>(name);
+            var receiverOptions = services.GetOptionsByName<KafkaReceiverMonitorDimensions>(name);
+            var cacheOptions = services.GetOptionsByName<KafkaStreamCachePressureOptions>(name);
+            var statisticOptions = services.GetOptionsByName<StreamStatisticOptions>(name);
+            var factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(services, name, kafkaOptions, receiverOptions, cacheOptions, statisticOptions);
+            factory.Init();
+            return factory;
+        }
     }
+
 }
