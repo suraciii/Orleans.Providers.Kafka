@@ -1,23 +1,26 @@
-﻿using System;
+﻿using Bond;
+using Bond.IO.Unsafe;
+using Bond.Protocols;
+using Confluent.Kafka;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Orleans.Configuration;
+using Orleans.Providers.Streams.Common;
+using Orleans.Runtime;
+using Orleans.Serialization;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Confluent.Kafka;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Orleans.Configuration;
-using Orleans.Providers.Kafka.Streams.StatisticMonitors;
-using Orleans.Providers.Streams.Common;
-using Orleans.Runtime;
-using Orleans.Serialization;
-using Orleans.Streams;
-
-namespace Orleans.Providers.Kafka.Streams
+using BatchSerializer = Bond.Serializer<Bond.Protocols.SimpleBinaryWriter<Bond.IO.Unsafe.OutputBuffer>>;
+namespace Orleans.Streams
 {
     public class KafkaAdapterFactory : IQueueAdapterFactory, IQueueAdapter
     {
+        private static BatchSerializer serializer = new BatchSerializer(typeof(KafkaBatchContainer));
+
         private readonly ILoggerFactory loggerFactory;
         protected ILogger logger;
         protected IServiceProvider serviceProvider;
@@ -30,9 +33,6 @@ namespace Orleans.Providers.Kafka.Streams
         private ConcurrentDictionary<QueueId, KafkaAdapterReceiver> receivers;
         private Producer producer;
         private ITelemetryProducer telemetryProducer;
-        /// <summary>
-        /// Gets the serialization manager.
-        /// </summary>
         public SerializationManager SerializationManager { get; private set; }
 
         public string Name { get; }
@@ -42,8 +42,6 @@ namespace Orleans.Providers.Kafka.Streams
         protected Func<QueueId, Task<IStreamFailureHandler>> StreamFailureHandlerFactory { get; set; }
 
         protected Func<IStreamQueueMapper> QueueMapperFactory { get; set; }
-
-        protected Func<KafkaReceiverMonitorDimensions, ILoggerFactory, ITelemetryProducer, IQueueAdapterReceiverMonitor> ReceiverMonitorFactory { get; set; }
 
         public StreamProviderDirection Direction { get; }
 
@@ -90,11 +88,6 @@ namespace Orleans.Providers.Kafka.Streams
                 this.streamQueueMapper =  new HashRingBasedStreamQueueMapper(h, Name);
 
                 this.QueueMapperFactory = () => new HashRingBasedStreamQueueMapper(h, this.Name);
-            }
-
-            if (this.ReceiverMonitorFactory == null)
-            {
-                this.ReceiverMonitorFactory = (dimensions, logger, telemetryProducer) => new DefaultKafkaReceiverMonitor(dimensions, telemetryProducer);
             }
 
             this.logger = this.loggerFactory.CreateLogger($"{this.GetType().FullName}"); // join topics?
@@ -148,6 +141,7 @@ namespace Orleans.Providers.Kafka.Streams
             if (cnt == 0)
                 return;
 
+            KafkaBatchContainer batch = new KafkaBatchContainer();
             byte[] val = null;
             byte[] key = null;
             if(events is IEnumerable<DomainEvent> des)
@@ -159,17 +153,22 @@ namespace Orleans.Providers.Kafka.Streams
                     throw new NotSupportedException("DomainEvent must have aggregate id");
 
                 key = Encoding.UTF8.GetBytes(aid);
-                val = SerializationManager.SerializeToByteArray(des.Select(de=>de.Event));
+                batch.Events = des.Select(de => de.Event).ToList();
             }
             else if(events is IEnumerable<IntegrationEvent> ies)
             {
                 key = null;
-                val = SerializationManager.SerializeToByteArray(ies.Select(ie => ie.Event));
+                batch.Events = ies.Select(ie => ie.Event).ToList();
             }
             else
             {
                 throw new NotSupportedException("Only support DomainEvent or IntegrationEvent");
             }
+
+            var output = new OutputBuffer();
+            var bondWriter = new SimpleBinaryWriter<OutputBuffer>(output);
+            serializer.Serialize(batch, bondWriter);
+            val = output.Data.ToArray();
 
             var msg = await this.producer.ProduceAsync(streamNamespace, key, val);
             if (msg.Error.HasError)

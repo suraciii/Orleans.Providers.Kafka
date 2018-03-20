@@ -24,7 +24,7 @@ namespace Orleans.Provider.Kafka.Test
                 .UseDevelopmentClustering(options => options.PrimarySiloEndpoint = new IPEndPoint(siloAddress, siloPort))
                 .ConfigureEndpoints(siloAddress, siloPort, gatewayPort)
                 .ConfigureServices(ConfigureServices)
-                .AddKafkaStreams("EventBus",
+                .AddKafkaEventBusStreams("EventBus",
                 kafka=>
                 {
                     kafka.BrokerList = "kafka1:9094,kafka2:9094";

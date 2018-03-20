@@ -1,34 +1,32 @@
-﻿using Orleans.Providers.Kafka.Streams;
+﻿using Orleans.Streams;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Orleans.Hosting
 {
     public static class SiloBuilderExtensions
     {
 
-        public static SiloKafkaStreamConfigurator AddKafkaStreams(
+        public static SiloKafkaStreamConfigurator AddKafkaEventBusStreams(
             this ISiloHostBuilder builder,
             string name)
         {
             return new SiloKafkaStreamConfigurator(name, builder);
         }
 
-        public static ISiloHostBuilder AddKafkaStreams(
+        public static ISiloHostBuilder AddKafkaEventBusStreams(
             this ISiloHostBuilder builder,
             string name,
             Action<SiloKafkaStreamConfigurator> configure)
         {
-            configure?.Invoke(builder.AddKafkaStreams(name));
+            configure?.Invoke(builder.AddKafkaEventBusStreams(name));
             return builder;
         }
 
-        public static ISiloHostBuilder AddKafkaStreams(
+        public static ISiloHostBuilder AddKafkaEventBusStreams(
             this ISiloHostBuilder builder,
             string name, Action<KafkaOptions> configureKafka, Action<KafkaReceiverOptions> configureReceiver)
         {
-            builder.AddKafkaStreams(name)
+            builder.AddKafkaEventBusStreams(name)
                 .ConfigureKafka(ob => ob.Configure(configureKafka))
                 .ConfigureReceiver(ob => ob.Configure(configureReceiver));
             return builder;

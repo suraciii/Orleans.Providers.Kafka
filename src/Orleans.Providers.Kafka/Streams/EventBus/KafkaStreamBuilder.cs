@@ -1,13 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Orleans.Configuration;
 using Orleans.Hosting;
-using Orleans.Providers.Kafka.Streams;
-using Orleans.Streams;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Orleans.Providers.Kafka.Streams
+namespace Orleans.Streams
 {
     public class SiloKafkaStreamConfigurator : SiloRecoverableStreamConfigurator
     {
@@ -43,20 +39,21 @@ namespace Orleans.Providers.Kafka.Streams
         }
     }
 
-    //public class ClusterClientEventHubStreamConfigurator : ClusterClientPersistentStreamConfigurator
-    //{
-    //    public ClusterClientEventHubStreamConfigurator(string name, IClientBuilder builder)
-    //       : base(name, builder, EventHubAdapterFactory.Create)
-    //    {
-    //        this.clientBuilder.ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(EventHubAdapterFactory).Assembly))
-    //            .ConfigureServices(services => services.ConfigureNamedOptionForLogging<EventHubOptions>(name)
-    //            .AddTransient<IConfigurationValidator>(sp => new KafkaRecieverOptionsValidator(sp.GetOptionsByName<EventHubOptions>(name), name)));
-    //    }
 
-    //    public ClusterClientEventHubStreamConfigurator ConfigureEventHub(Action<OptionsBuilder<EventHubOptions>> configureOptions)
-    //    {
-    //        this.Configure<EventHubOptions>(configureOptions);
-    //        return this;
-    //    }
-    //}
+    public class ClusterClientKafkaStreamConfigurator : ClusterClientPersistentStreamConfigurator
+    {
+        public ClusterClientKafkaStreamConfigurator(string name, IClientBuilder builder)
+           : base(name, builder, KafkaAdapterFactory.Create)
+        {
+            this.clientBuilder.ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(KafkaAdapterFactory).Assembly))
+                .ConfigureServices(services => services.ConfigureNamedOptionForLogging<KafkaOptions>(name)
+                .AddTransient<IConfigurationValidator>(sp => new KafkaOptionsValidator(sp.GetOptionsByName<KafkaOptions>(name), name)));
+        }
+
+        public ClusterClientKafkaStreamConfigurator ConfigureKafka(Action<OptionsBuilder<KafkaOptions>> configureOptions)
+        {
+            this.Configure<KafkaOptions>(configureOptions);
+            return this;
+        }
+    }
 }

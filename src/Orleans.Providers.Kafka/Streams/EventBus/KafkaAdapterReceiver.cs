@@ -8,16 +8,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BatchDeserializer = Bond.Deserializer<Bond.Protocols.SimpleBinaryReader<Bond.IO.Unsafe.InputBuffer>>;
 
-namespace Orleans.Providers.Kafka.Streams
+namespace Orleans.Streams
 {
     public class KafkaAdapterReceiver : IQueueAdapterReceiver
     {
+        private static BatchDeserializer deserializer = new BatchDeserializer(typeof(KafkaBatchContainer));
+
         private Consumer consumer;
         private long lastReadMessage;
         private SerializationManager serializationManager;
         private readonly KafkaOptions kafkaOptions;
         private readonly KafkaReceiverOptions receiverOptions;
+        private readonly IList<IBatchContainer> empty = new List<KafkaBatchContainer>().Cast<IBatchContainer>().ToList();
         public KafkaAdapterReceiver(KafkaOptions kafkaOptions, KafkaReceiverOptions receiverOptions, SerializationManager serializationManager)
         {
             this.kafkaOptions = kafkaOptions;
@@ -27,7 +31,7 @@ namespace Orleans.Providers.Kafka.Streams
 
         public Task Initialize(TimeSpan timeout)
         {
-            if (consumer != null) // check in case we already shut it down.
+            if (consumer == null) // check in case we already shut it down.
             {
                 return InitializeInternal(timeout);
             }
@@ -45,9 +49,8 @@ namespace Orleans.Providers.Kafka.Streams
 
         public Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)
         {
-            if(consumer == null)
+            if(consumer == null || consumer.Subscription.Count == 0)
             {
-                IList<IBatchContainer> empty = new List<KafkaBatchContainer>().Cast<IBatchContainer>().ToList();
                 return Task.FromResult(empty);
             }
             List<Message> msgs = new List<Message>();
@@ -55,7 +58,7 @@ namespace Orleans.Providers.Kafka.Streams
             {
                 consumer.Consume(out var msg, 50);
 
-                if (msg.Error.Code == ErrorCode.Local_PartitionEOF)
+                if (msg == null || msg.Error.Code == ErrorCode.Local_PartitionEOF)
                     break;
 
                 if (!msg.Error.HasError)
@@ -74,7 +77,8 @@ namespace Orleans.Providers.Kafka.Streams
             IList<IBatchContainer> batches = new List<IBatchContainer>();
             foreach (var msg in msgs)
             {
-                IBatchContainer container = KafkaBatchContainer.FromKafkaMessage(msg, serializationManager, lastReadMessage++);
+                IBatchContainer container = KafkaBatchContainer.FromKafkaMessage(msg, deserializer, lastReadMessage++);
+
                 batches.Add(container);
             }
 

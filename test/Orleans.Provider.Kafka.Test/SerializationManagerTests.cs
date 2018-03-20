@@ -1,10 +1,11 @@
-﻿using FluentAssertions;
+﻿using Bond;
+using Bond.IO.Unsafe;
+using Bond.Protocols;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Orleans.Providers.Kafka.Streams;
 using Orleans.Serialization;
-using System;
+using Orleans.Streams;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -12,28 +13,37 @@ namespace Orleans.Provider.Kafka.Test
 {
     public class SerializationManagerTests: BaseTestHost
     {
+        private static Serializer<SimpleBinaryWriter<OutputBuffer>> serializer = new Serializer<SimpleBinaryWriter<OutputBuffer>>(typeof(List<Event>));
+        private static Deserializer<SimpleBinaryReader<InputBuffer>> deserializer = new Deserializer<SimpleBinaryReader<InputBuffer>>(typeof(List<Event>));
+
         [Fact]
-        public async Task EventSerializtionRountTrip()
+        public void EventSerializtionRountTrip()
         {
-            var silo = await InitTestHost();
+            ////var silo = await InitTestHost();
 
-            var sm = silo.Services.GetRequiredService<SerializationManager>();
+            ////var sm = silo.Services.GetRequiredService<SerializationManager>();
 
-            var evt = new Event
-            {
-                EventType = "AAA",
-                Payload = new byte[8]
-            };
+            //var evt = new Event
+            //{
+            //    EventType = "AAA",
+            //    Payload = new byte[8]
+            //};
 
-            sm.RoundTripSerializationForTesting(evt).Should().BeEquivalentTo(evt);
+            //var output = new OutputBuffer();
+            //var bondWriter = new SimpleBinaryWriter<OutputBuffer>(output);
+            //serializer.Serialize(evt, bondWriter);
+            //var data = output.Data.ToArray();
+
+            //var input = new InputBuffer(data);
+            //var bondReader = new SimpleBinaryReader<InputBuffer>(input);
+            //var result = deserializer.Deserialize<Event>(bondReader);
+
+            //result.Should().BeEquivalentTo(evt);
         }
 
         [Fact]
-        public async Task EventListSerializtionRountTrip()
+        public void EventListSerializtionRountTrip()
         {
-            var silo = await InitTestHost();
-
-            var sm = silo.Services.GetRequiredService<SerializationManager>();
 
             var evt = new Event
             {
@@ -41,12 +51,20 @@ namespace Orleans.Provider.Kafka.Test
                 Payload = new byte[8]
             };
 
-            var eventList = new List<Event> { evt };
+            var batch = new KafkaBatchContainer { Events = new List<Event> { evt } };
 
-            sm.RoundTripSerializationForTesting(eventList).Should().BeEquivalentTo(eventList);
+            var output = new OutputBuffer();
+            var bondWriter = new SimpleBinaryWriter<OutputBuffer>(output);
+            Serialize.To(bondWriter, batch);
+            var data = output.Data.ToArray();
 
-            var data = sm.SerializeToByteArray(eventList);
-            var el = sm.DeserializeFromByteArray<List<Event>>(data);
+
+            var input = new InputBuffer(data);
+            var bondReader = new SimpleBinaryReader<InputBuffer>(input);
+            var result = Deserialize<KafkaBatchContainer>.From(bondReader);
+
+            result.Events.Should().BeEquivalentTo(batch.Events);
+
         }
     }
 }

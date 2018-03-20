@@ -16,7 +16,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{999B11BF-A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "edtest", "edtest", "{D6E4953F-5534-419C-A50C-E24C743378B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Provider.Kafka.Test", "test\Orleans.Provider.Kafka.Test\Orleans.Provider.Kafka.Test.csproj", "{94159642-860B-433B-A638-709DD569826F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Provider.Kafka.Test", "test\Orleans.Provider.Kafka.Test\Orleans.Provider.Kafka.Test.csproj", "{94159642-860B-433B-A638-709DD569826F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "test\Tester\Tester.csproj", "{34C3D0CE-219C-4C82-A8AF-8F3F5D3CDCEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester.Grains", "test\Tester.Grains\Tester.Grains.csproj", "{8894DB25-70C2-4970-A017-0406A88B3059}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +36,14 @@ Global
 		{94159642-860B-433B-A638-709DD569826F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94159642-860B-433B-A638-709DD569826F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94159642-860B-433B-A638-709DD569826F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34C3D0CE-219C-4C82-A8AF-8F3F5D3CDCEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34C3D0CE-219C-4C82-A8AF-8F3F5D3CDCEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34C3D0CE-219C-4C82-A8AF-8F3F5D3CDCEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34C3D0CE-219C-4C82-A8AF-8F3F5D3CDCEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8894DB25-70C2-4970-A017-0406A88B3059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8894DB25-70C2-4970-A017-0406A88B3059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8894DB25-70C2-4970-A017-0406A88B3059}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8894DB25-70C2-4970-A017-0406A88B3059}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,6 +51,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{557B582F-0BB0-4108-B034-030E6EA5EED6} = {707B9907-7A5E-4D6E-834A-3557170EB906}
 		{94159642-860B-433B-A638-709DD569826F} = {999B11BF-A69A-4C66-88DB-FD5C3B8F377C}
+		{34C3D0CE-219C-4C82-A8AF-8F3F5D3CDCEF} = {999B11BF-A69A-4C66-88DB-FD5C3B8F377C}
+		{8894DB25-70C2-4970-A017-0406A88B3059} = {999B11BF-A69A-4C66-88DB-FD5C3B8F377C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CDA7E57B-7B37-4B9C-A246-5254D1F402A3}

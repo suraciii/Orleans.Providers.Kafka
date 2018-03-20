@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Orleans.Providers.Kafka.Streams
+namespace Orleans.Streams
 {
     public class KafkaOptions
     {
@@ -47,7 +47,7 @@ namespace Orleans.Providers.Kafka.Streams
     {
         public List<string> TopicList { get; set; }
         public string ConsumerGroup { get; set; }
-        public int TotalQueueCount { get; set; }
+        public int TotalQueueCount { get; set; } = 2;
     }
 
     public class KafkaStreamCachePressureOptions
