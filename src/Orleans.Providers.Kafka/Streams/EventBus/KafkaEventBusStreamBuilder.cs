@@ -5,12 +5,12 @@ using System;
 
 namespace Orleans.Streams
 {
-    public class SiloKafkaStreamConfigurator : SiloRecoverableStreamConfigurator
+    public class SiloKafkaEventBusStreamConfigurator : SiloRecoverableStreamConfigurator
     {
-        public SiloKafkaStreamConfigurator(string name, ISiloHostBuilder builder)
-            : base(name, builder, KafkaAdapterFactory.Create)
+        public SiloKafkaEventBusStreamConfigurator(string name, ISiloHostBuilder builder)
+            : base(name, builder, KafkaEventBusAdapterFactory.Create)
         {
-            this.siloBuilder.ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(KafkaAdapterFactory).Assembly))
+            this.siloBuilder.ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(KafkaEventBusAdapterFactory).Assembly))
                 .ConfigureServices(services => services.ConfigureNamedOptionForLogging<KafkaOptions>(name)
                     .ConfigureNamedOptionForLogging<KafkaReceiverOptions>(name)
                     .ConfigureNamedOptionForLogging<KafkaStreamCachePressureOptions>(name)
@@ -22,19 +22,19 @@ namespace Orleans.Streams
         }
 
 
-        public SiloKafkaStreamConfigurator ConfigureKafka(Action<OptionsBuilder<KafkaOptions>> configureOptions)
+        public SiloKafkaEventBusStreamConfigurator ConfigureKafka(Action<OptionsBuilder<KafkaOptions>> configureOptions)
         {
             this.Configure<KafkaOptions>(configureOptions);
             return this;
         }
 
-        public SiloKafkaStreamConfigurator ConfigureReceiver(Action<OptionsBuilder<KafkaReceiverOptions>> configureOptions)
+        public SiloKafkaEventBusStreamConfigurator ConfigureReceiver(Action<OptionsBuilder<KafkaReceiverOptions>> configureOptions)
         {
             this.Configure<KafkaReceiverOptions>(configureOptions);
             return this;
         }
 
-        public SiloKafkaStreamConfigurator ConfigureCachePressuring(Action<OptionsBuilder<KafkaStreamCachePressureOptions>> configureOptions)
+        public SiloKafkaEventBusStreamConfigurator ConfigureCachePressuring(Action<OptionsBuilder<KafkaStreamCachePressureOptions>> configureOptions)
         {
             this.Configure<KafkaStreamCachePressureOptions>(configureOptions);
             return this;
@@ -42,19 +42,19 @@ namespace Orleans.Streams
     }
 
 
-    public class ClusterClientKafkaStreamConfigurator : ClusterClientPersistentStreamConfigurator
+    public class ClusterClientKafkaEventBusStreamConfigurator : ClusterClientPersistentStreamConfigurator
     {
-        public ClusterClientKafkaStreamConfigurator(string name, IClientBuilder builder)
-           : base(name, builder, KafkaAdapterFactory.Create)
+        public ClusterClientKafkaEventBusStreamConfigurator(string name, IClientBuilder builder)
+           : base(name, builder, KafkaEventBusAdapterFactory.Create)
         {
-            this.clientBuilder.ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(KafkaAdapterFactory).Assembly))
+            this.clientBuilder.ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(KafkaEventBusAdapterFactory).Assembly))
                 .ConfigureServices(services => services.ConfigureNamedOptionForLogging<KafkaOptions>(name)
                 .AddTransient<IConfigurationValidator>(sp => new KafkaOptionsValidator(sp.GetOptionsByName<KafkaOptions>(name), name)));
 
             this.ConfigureStreamPubSub(StreamPubSubType.ImplicitOnly);
         }
 
-        public ClusterClientKafkaStreamConfigurator ConfigureKafka(Action<OptionsBuilder<KafkaOptions>> configureOptions)
+        public ClusterClientKafkaEventBusStreamConfigurator ConfigureKafka(Action<OptionsBuilder<KafkaOptions>> configureOptions)
         {
             this.Configure<KafkaOptions>(configureOptions);
             return this;

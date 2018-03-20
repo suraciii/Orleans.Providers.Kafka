@@ -9,6 +9,6 @@
     <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="$(OrleansVersion)" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Orleans.Providers.Kafka\Orleans.Providers.Kafka.csproj" />
+    <ProjectReference Include="..\..\src\Orleans.Providers.Kafka\Orleans.Providers.KafkaEventBus.csproj" />
   </ItemGroup>
 </Project>

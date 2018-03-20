@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{707B9907-7A5E-4D6E-834A-3557170EB906}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Providers.Kafka", "src\Orleans.Providers.Kafka\Orleans.Providers.Kafka.csproj", "{557B582F-0BB0-4108-B034-030E6EA5EED6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Providers.KafkaEventBus", "src\Orleans.Providers.Kafka\Orleans.Providers.KafkaEventBus.csproj", "{557B582F-0BB0-4108-B034-030E6EA5EED6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{999B11BF-A69A-4C66-88DB-FD5C3B8F377C}"
 EndProject
@@ -19,9 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "edtest", "edtest", "{D6E495
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Provider.Kafka.Test", "test\Orleans.Provider.Kafka.Test\Orleans.Provider.Kafka.Test.csproj", "{94159642-860B-433B-A638-709DD569826F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "test\Tester\Tester.csproj", "{34C3D0CE-219C-4C82-A8AF-8F3F5D3CDCEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tester", "test\Tester\Tester.csproj", "{34C3D0CE-219C-4C82-A8AF-8F3F5D3CDCEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester.Grains", "test\Tester.Grains\Tester.Grains.csproj", "{8894DB25-70C2-4970-A017-0406A88B3059}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tester.Grains", "test\Tester.Grains\Tester.Grains.csproj", "{8894DB25-70C2-4970-A017-0406A88B3059}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

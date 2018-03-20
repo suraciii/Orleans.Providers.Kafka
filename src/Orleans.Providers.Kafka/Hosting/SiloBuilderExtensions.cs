@@ -7,17 +7,17 @@ namespace Orleans.Hosting
     public static class SiloBuilderExtensions
     {
 
-        public static SiloKafkaStreamConfigurator AddKafkaEventBusStreams(
+        public static SiloKafkaEventBusStreamConfigurator AddKafkaEventBusStreams(
             this ISiloHostBuilder builder,
             string name)
         {
-            return new SiloKafkaStreamConfigurator(name, builder);
+            return new SiloKafkaEventBusStreamConfigurator(name, builder);
         }
 
         public static ISiloHostBuilder AddKafkaEventBusStreams(
             this ISiloHostBuilder builder,
             string name,
-            Action<SiloKafkaStreamConfigurator> configure)
+            Action<SiloKafkaEventBusStreamConfigurator> configure)
         {
             configure?.Invoke(builder.AddKafkaEventBusStreams(name));
             return builder;

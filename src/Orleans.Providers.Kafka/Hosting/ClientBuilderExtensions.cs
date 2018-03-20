@@ -8,17 +8,17 @@ namespace Orleans.Hosting
     public static class ClientBuilderExtensions
     {
 
-        public static ClusterClientKafkaStreamConfigurator AddKafkaEventBusStreams(
+        public static ClusterClientKafkaEventBusStreamConfigurator AddKafkaEventBusStreams(
             this IClientBuilder builder,
             string name)
         {
-            return new ClusterClientKafkaStreamConfigurator(name, builder);
+            return new ClusterClientKafkaEventBusStreamConfigurator(name, builder);
         }
 
         public static IClientBuilder AddKafkaEventBusStreams(
            this IClientBuilder builder,
            string name,
-           Action<ClusterClientKafkaStreamConfigurator> configure)
+           Action<ClusterClientKafkaEventBusStreamConfigurator> configure)
         {
             configure?.Invoke(builder.AddKafkaEventBusStreams(name));
             return builder;

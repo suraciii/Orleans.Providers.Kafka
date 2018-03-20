@@ -12,17 +12,17 @@ using BatchDeserializer = Bond.Deserializer<Bond.Protocols.SimpleBinaryReader<Bo
 
 namespace Orleans.Streams
 {
-    public class KafkaAdapterReceiver : IQueueAdapterReceiver
+    public class KafkaEventBusAdapterReceiver : IQueueAdapterReceiver
     {
-        private static BatchDeserializer deserializer = new BatchDeserializer(typeof(KafkaBatchContainer));
+        private static BatchDeserializer deserializer = new BatchDeserializer(typeof(KafkaEventBusBatchContainer));
 
         private Consumer consumer;
         private long lastReadMessage;
         private SerializationManager serializationManager;
         private readonly KafkaOptions kafkaOptions;
         private readonly KafkaReceiverOptions receiverOptions;
-        private readonly IList<IBatchContainer> empty = new List<KafkaBatchContainer>().Cast<IBatchContainer>().ToList();
-        public KafkaAdapterReceiver(KafkaOptions kafkaOptions, KafkaReceiverOptions receiverOptions, SerializationManager serializationManager)
+        private readonly IList<IBatchContainer> empty = new List<KafkaEventBusBatchContainer>().Cast<IBatchContainer>().ToList();
+        public KafkaEventBusAdapterReceiver(KafkaOptions kafkaOptions, KafkaReceiverOptions receiverOptions, SerializationManager serializationManager)
         {
             this.kafkaOptions = kafkaOptions;
             this.receiverOptions = receiverOptions;
@@ -77,7 +77,7 @@ namespace Orleans.Streams
             IList<IBatchContainer> batches = new List<IBatchContainer>();
             foreach (var msg in msgs)
             {
-                IBatchContainer container = KafkaBatchContainer.FromKafkaMessage(msg, deserializer, lastReadMessage++);
+                IBatchContainer container = KafkaEventBusBatchContainer.FromKafkaMessage(msg, deserializer, lastReadMessage++);
 
                 batches.Add(container);
             }
@@ -87,7 +87,7 @@ namespace Orleans.Streams
 
         public Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
         {
-            var tps = messages.Cast<KafkaBatchContainer>().Select(c => c.TopicPartitionOffset);
+            var tps = messages.Cast<KafkaEventBusBatchContainer>().Select(c => c.TopicPartitionOffset);
             return consumer.CommitAsync(tps);
         }
 

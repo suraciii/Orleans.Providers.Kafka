@@ -17,9 +17,9 @@ using System.Threading.Tasks;
 using BatchSerializer = Bond.Serializer<Bond.Protocols.SimpleBinaryWriter<Bond.IO.Unsafe.OutputBuffer>>;
 namespace Orleans.Streams
 {
-    public class KafkaAdapterFactory : IQueueAdapterFactory, IQueueAdapter
+    public class KafkaEventBusAdapterFactory : IQueueAdapterFactory, IQueueAdapter
     {
-        private static BatchSerializer serializer = new BatchSerializer(typeof(KafkaBatchContainer));
+        private static BatchSerializer serializer = new BatchSerializer(typeof(KafkaEventBusBatchContainer));
 
         private readonly ILoggerFactory loggerFactory;
         protected ILogger logger;
@@ -30,7 +30,7 @@ namespace Orleans.Streams
         private StreamStatisticOptions statisticOptions;
         private SimpleQueueAdapterCache _adapterCache;
         private IStreamQueueMapper streamQueueMapper;
-        private ConcurrentDictionary<QueueId, KafkaAdapterReceiver> receivers;
+        private ConcurrentDictionary<QueueId, KafkaEventBusAdapterReceiver> receivers;
         private Producer producer;
         private ITelemetryProducer telemetryProducer;
         public SerializationManager SerializationManager { get; private set; }
@@ -49,7 +49,7 @@ namespace Orleans.Streams
 
 
 
-        public KafkaAdapterFactory(string name, KafkaOptions kafkaOptions, KafkaReceiverOptions receiverOptions, KafkaStreamCachePressureOptions cacheOptions, StreamStatisticOptions statisticOptions,
+        public KafkaEventBusAdapterFactory(string name, KafkaOptions kafkaOptions, KafkaReceiverOptions receiverOptions, KafkaStreamCachePressureOptions cacheOptions, StreamStatisticOptions statisticOptions,
             IServiceProvider serviceProvider, SerializationManager serializationManager, ITelemetryProducer telemetryProducer, ILoggerFactory loggerFactory)
         {
             this.Name = name;
@@ -68,7 +68,7 @@ namespace Orleans.Streams
 
         public virtual void Init()
         {
-            this.receivers = new ConcurrentDictionary<QueueId, KafkaAdapterReceiver>();
+            this.receivers = new ConcurrentDictionary<QueueId, KafkaEventBusAdapterReceiver>();
             this.telemetryProducer = this.serviceProvider.GetService<ITelemetryProducer>();
 
             if(producer == null)
@@ -141,7 +141,7 @@ namespace Orleans.Streams
             if (cnt == 0)
                 return;
 
-            KafkaBatchContainer batch = new KafkaBatchContainer();
+            KafkaEventBusBatchContainer batch = new KafkaEventBusBatchContainer();
             byte[] val = null;
             byte[] key = null;
             if(events is IEnumerable<DomainEvent> des)
@@ -182,16 +182,16 @@ namespace Orleans.Streams
 
         public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
         {
-            return new KafkaAdapterReceiver(kafkaOptions, receiverOptions, SerializationManager);
+            return new KafkaEventBusAdapterReceiver(kafkaOptions, receiverOptions, SerializationManager);
         }
 
-        public static KafkaAdapterFactory Create(IServiceProvider services, string name)
+        public static KafkaEventBusAdapterFactory Create(IServiceProvider services, string name)
         {
             var kafkaOptions = services.GetOptionsByName<KafkaOptions>(name);
             var receiverOptions = services.GetOptionsByName<KafkaReceiverOptions>(name);
             var cacheOptions = services.GetOptionsByName<KafkaStreamCachePressureOptions>(name);
             var statisticOptions = services.GetOptionsByName<StreamStatisticOptions>(name);
-            var factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(services, name, kafkaOptions, receiverOptions, cacheOptions, statisticOptions);
+            var factory = ActivatorUtilities.CreateInstance<KafkaEventBusAdapterFactory>(services, name, kafkaOptions, receiverOptions, cacheOptions, statisticOptions);
             factory.Init();
             return factory;
         }

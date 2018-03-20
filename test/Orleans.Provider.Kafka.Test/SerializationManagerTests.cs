@@ -51,7 +51,7 @@ namespace Orleans.Provider.Kafka.Test
                 Payload = new byte[8]
             };
 
-            var batch = new KafkaBatchContainer { Events = new List<Event> { evt } };
+            var batch = new KafkaEventBusBatchContainer { Events = new List<Event> { evt } };
 
             var output = new OutputBuffer();
             var bondWriter = new SimpleBinaryWriter<OutputBuffer>(output);
@@ -61,7 +61,7 @@ namespace Orleans.Provider.Kafka.Test
 
             var input = new InputBuffer(data);
             var bondReader = new SimpleBinaryReader<InputBuffer>(input);
-            var result = Deserialize<KafkaBatchContainer>.From(bondReader);
+            var result = Deserialize<KafkaEventBusBatchContainer>.From(bondReader);
 
             result.Events.Should().BeEquivalentTo(batch.Events);
 
