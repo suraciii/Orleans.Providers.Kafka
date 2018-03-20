@@ -13,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{707B9907-7A5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{999B11BF-A69A-4C66-88DB-FD5C3B8F377C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "edtest", "edtest", "{D6E4953F-5534-419C-A50C-E24C743378B3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Provider.Kafka.Test", "test\Orleans.Provider.Kafka.Test\Orleans.Provider.Kafka.Test.csproj", "{94159642-860B-433B-A638-709DD569826F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tester", "test\Tester\Tester.csproj", "{34C3D0CE-219C-4C82-A8AF-8F3F5D3CDCEF}"

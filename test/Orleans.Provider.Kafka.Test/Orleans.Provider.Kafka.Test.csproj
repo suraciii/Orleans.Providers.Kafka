@@ -18,4 +18,8 @@
     <DotNetCliToolReference Include="dotnet-xunit" Version="$(xUnitVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Orleans.Providers.KafkaEventBus\Orleans.Providers.KafkaEventBus.csproj" />
+  </ItemGroup>
+
 </Project>
