@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
@@ -10,11 +11,18 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Tester.Grains;
+using Xunit.Abstractions;
 
 namespace Tester
 {
     public class BaseTestHost
     {
+        private ITestOutputHelper output;
+        public BaseTestHost(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
         private ISiloHost host;
 
         protected virtual async Task<ISiloHost> InitTestHost()
@@ -36,7 +44,8 @@ namespace Tester
                         receiver.TopicList = new List<string> { EventBusConstants.DOMAIN_EVENT_TEST_TOPIC };
                         receiver.TotalQueueCount = 4;
                     }
-                );
+                )
+                .ConfigureLogging(logging=>logging.AddXunit(output));
 
             host = builder.Build();
             await host.StartAsync();
@@ -60,7 +69,7 @@ namespace Tester
                 .AddKafkaEventBusStreams(EventBusConstants.EVENT_BUS_PROVIDER,
                 kafka =>
                 {
-                    kafka.BrokerList = "kafka1:9094,kafka2:9094";
+                    kafka.BrokerList = "vm0:9094";
                     kafka.Direction = Orleans.Streams.StreamProviderDirection.WriteOnly;
                 })
                 .Build();

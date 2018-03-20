@@ -1,4 +1,5 @@
-﻿using Orleans.Streams;
+﻿using Orleans.Configuration;
+using Orleans.Streams;
 using System;
 
 namespace Orleans.Hosting

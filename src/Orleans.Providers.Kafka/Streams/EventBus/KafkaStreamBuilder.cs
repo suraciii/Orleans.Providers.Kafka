@@ -17,6 +17,8 @@ namespace Orleans.Streams
                     .AddTransient<IConfigurationValidator>(sp => new KafkaOptionsValidator(sp.GetOptionsByName<KafkaOptions>(name), name))
                     .AddTransient<IConfigurationValidator>(sp => new KafkaRecieverOptionsValidator(sp.GetOptionsByName<KafkaReceiverOptions>(name), name))
                 );
+
+            this.ConfigureStreamPubSub(StreamPubSubType.ImplicitOnly);
         }
 
 
@@ -48,6 +50,8 @@ namespace Orleans.Streams
             this.clientBuilder.ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(KafkaAdapterFactory).Assembly))
                 .ConfigureServices(services => services.ConfigureNamedOptionForLogging<KafkaOptions>(name)
                 .AddTransient<IConfigurationValidator>(sp => new KafkaOptionsValidator(sp.GetOptionsByName<KafkaOptions>(name), name)));
+
+            this.ConfigureStreamPubSub(StreamPubSubType.ImplicitOnly);
         }
 
         public ClusterClientKafkaStreamConfigurator ConfigureKafka(Action<OptionsBuilder<KafkaOptions>> configureOptions)

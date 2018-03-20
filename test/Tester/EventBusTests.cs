@@ -5,11 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Tester.Grains;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Tester
 {
     public class EventBusTests: BaseTestHost
     {
+        public EventBusTests(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Fact]
         public async Task PublishEventFromClient()
         {
@@ -30,10 +35,8 @@ namespace Tester
                 }
             };
             await stream.OnNextAsync(domainEvent);
-            //await Task.Delay(-1);
 
-            await Task.Delay(2000);
-
+            await Task.Delay(10000);
 
             var grain = client.GetGrain<ISampleGrain>(grainId);
 

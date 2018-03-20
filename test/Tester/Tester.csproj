@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="2.0.0" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="$(OrleansVersion)" />
     <PackageReference Include="Microsoft.Orleans.Serialization.Bond" Version="$(OrleansVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestSdkVersion)" />
@@ -14,6 +15,7 @@
     <PackageReference Include="xunit" Version="$(xUnitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(xUnitVersion)" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="$(xUnitVersion)" />
+    
   </ItemGroup>
 
   <ItemGroup>

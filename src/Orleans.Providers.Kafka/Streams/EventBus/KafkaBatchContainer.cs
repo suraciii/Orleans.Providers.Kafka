@@ -81,7 +81,7 @@ namespace Orleans.Streams
             var container = deserializer.Deserialize<KafkaBatchContainer>(bondReader);
 
             var aggIdString = msg.Key == null ? null : Encoding.UTF8.GetString(msg.Key);
-            if (string.IsNullOrEmpty(aggIdString) && Guid.TryParse(aggIdString, out var guid))
+            if (!string.IsNullOrEmpty(aggIdString) && Guid.TryParse(aggIdString, out var guid))
             {
                 container.StreamGuid = guid;
             }
